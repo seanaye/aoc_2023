@@ -7,7 +7,7 @@ use nom::{
     IResult, Parser,
 };
 
-const INPUT: &str = include_str!("../input");
+const INPUT: &str = include_str!("../test");
 const RADIX: u32 = 10u32;
 
 fn part_one() -> u32 {
