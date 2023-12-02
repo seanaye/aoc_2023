@@ -49,7 +49,6 @@ fn get_str_nums() -> Vec<&'static str> {
 }
 
 fn word_to_num(s: &str) -> Option<u32> {
-    dbg!(&s);
     let out = match s {
         "one" => Some(1u32),
         "two" => Some(2u32),
@@ -107,15 +106,16 @@ fn part_two() -> u32 {
 fn search_slice(s: &str) -> Option<u32> {
     let nums = get_str_nums();
     for num in nums {
-        if num == "seven" {
-            dbg!(num, s);
-        }
+        dbg!(num, &s);
         for (i, c) in s.chars().enumerate() {
+            if i >= num.len() {
+                return word_to_num(num);
+            }
             let this_char = num.chars().nth(i).unwrap_or('.');
             if this_char != c {
                 break;
             }
-            if i >= num.len() || i == s.len() - 1 {
+            if i == s.len() - 1 {
                 return word_to_num(num);
             }
         }
