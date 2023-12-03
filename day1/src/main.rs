@@ -7,7 +7,7 @@ use nom::{
     IResult, Parser,
 };
 
-const INPUT: &str = include_str!("../test");
+const INPUT: &str = include_str!("../input");
 const RADIX: u32 = 10u32;
 
 fn part_one() -> u32 {
@@ -68,6 +68,7 @@ fn word_to_num(s: &str) -> Option<u32> {
 
 fn part_two() -> u32 {
     iter_lines()
+        .map(str::trim)
         .map(|line| {
             let mut first: Option<u32> = None;
             let mut last: Option<u32> = None;
@@ -84,20 +85,21 @@ fn part_two() -> u32 {
                         }
                         _ => (),
                     }
-                }
-
-                match (is_digit, first, last) {
-                    (true, None, None) => {
-                        first = char.to_digit(RADIX);
+                } else {
+                    match (is_digit, first, last) {
+                        (true, None, None) => {
+                            first = char.to_digit(RADIX);
+                        }
+                        (true, Some(_), _) => {
+                            last = char.to_digit(RADIX);
+                        }
+                        _ => (),
                     }
-                    (true, Some(_), _) => {
-                        last = char.to_digit(RADIX);
-                    }
-                    _ => (),
                 }
             }
             let pos1 = first.unwrap_or(0);
             let out: u32 = pos1 * 10 + last.unwrap_or(pos1);
+            dbg!(&out);
             out
         })
         .sum()
@@ -106,16 +108,17 @@ fn part_two() -> u32 {
 fn search_slice(s: &str) -> Option<u32> {
     let nums = get_str_nums();
     for num in nums {
-        dbg!(num, &s);
         for (i, c) in s.chars().enumerate() {
             if i >= num.len() {
                 return word_to_num(num);
             }
             let this_char = num.chars().nth(i).unwrap_or('.');
+            dbg!(this_char, c);
             if this_char != c {
                 break;
             }
-            if i == s.len() - 1 {
+            if i == s.len() - 1 && i == num.len() - 1 {
+                dbg!("here", num, s);
                 return word_to_num(num);
             }
         }
