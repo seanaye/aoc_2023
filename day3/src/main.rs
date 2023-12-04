@@ -83,7 +83,7 @@ impl Grid {
                         }),
                 )
             })
-            .flat_map(|vec| vec)
+            .flatten()
     }
 }
 
@@ -165,8 +165,8 @@ impl NumberRange {
         number_of_places(self.num as usize)
     }
 
-    fn range(&self) -> std::ops::RangeInclusive<usize> {
-        self.coord.x..=(self.coord.x + self.places())
+    fn range(&self) -> std::ops::Range<usize> {
+        self.coord.x..(self.coord.x + self.places())
     }
 
     fn intersects(&self, coord: &Coord) -> bool {
@@ -245,5 +245,4 @@ mod tests {
         assert_eq!(part_two(include_str!("../test")), 467835);
     }
 }
-
 
