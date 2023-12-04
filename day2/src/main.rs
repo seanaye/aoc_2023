@@ -1,14 +1,18 @@
+use std::str::FromStr;
+
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::u32,
     combinator::{map, opt},
+    multi::many1,
     sequence::delimited,
-    IResult, multi::many1,
+    IResult,
 };
 
 fn main() {
-    dbg!(part_one());
+    dbg!(part_one(INPUT.lines()));
+    dbg!(part_two(INPUT.lines()));
 }
 
 const INPUT: &str = include_str!("../input");
@@ -18,6 +22,12 @@ struct Set {
     red: u32,
     blue: u32,
     green: u32,
+}
+
+impl Set {
+    fn power(&self) -> u32 {
+        self.red * self.blue * self.green
+    }
 }
 
 impl PartialEq for Set {
@@ -46,10 +56,6 @@ impl PartialOrd for Set {
             _ => None,
         }
     }
-}
-
-fn iter_lines() -> impl Iterator<Item = &'static str> {
-    INPUT.lines()
 }
 
 fn blue(s: &str) -> IResult<&str, u32> {
@@ -113,6 +119,34 @@ struct Game {
     sets: Vec<Set>,
 }
 
+impl Game {
+    fn is_valid(&self, max_set: &Set) -> bool {
+        self.sets.iter().all(|f| f <= max_set)
+    }
+
+    fn minimum_set(&self) -> Set {
+        let min_red = self.sets.iter().map(|f| f.red).max().unwrap();
+        let min_green = self.sets.iter().map(|f| f.green).max().unwrap();
+        let min_blue = self.sets.iter().map(|f| f.blue).max().unwrap();
+        Set {
+            red: min_red,
+            green: min_green,
+            blue: min_blue,
+        }
+    }
+}
+
+impl FromStr for Game {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match game_from_s(value) {
+            Ok((_, game)) => Ok(game),
+            Err(_) => Err(()),
+        }
+    }
+}
+
 fn game_from_s(s: &str) -> IResult<&str, Game> {
     let (next, _) = delimited(tag("Game "), u32, tag(": "))(s)?;
     let sets = next
@@ -129,23 +163,30 @@ fn game_from_s(s: &str) -> IResult<&str, Game> {
 //     this_game <= max_game
 // }
 
-fn part_one() -> u32 {
+fn part_one(input: impl Iterator<Item = &'static str>) -> u32 {
     let max_set = Set {
         red: 12,
         green: 13,
         blue: 14,
     };
-    iter_lines()
+    input
         .enumerate()
-        .filter_map(|(i, line)| {
-            let id = i + 1;
-            let (_, game) = game_from_s(line).ok()?;
-            match game.sets.iter().all(|set| {
-                set <= &max_set
-            }) {
-                true => Some(id as u32),
+        .filter_map(
+            |(i, line)| match Game::from_str(line).ok()?.is_valid(&max_set) {
+                true => Some(i as u32 + 1),
                 false => None,
-            }
+            },
+        )
+        .sum()
+}
+
+fn part_two(input: impl Iterator<Item = &'static str>) -> u32 {
+    input
+        .filter_map(|line| Game::from_str(line).ok())
+        .map(|game| {
+            let min = game.minimum_set();
+            dbg!(&game, &min);
+            min.power()
         })
         .sum()
 }
@@ -155,6 +196,45 @@ mod tests {
     use super::*;
     #[test]
     fn test_part_one() {
-        assert!(Set { red: 0 , blue: 2, green: 13 } <= Set { red: 12, blue: 14, green: 13 });
+        assert!(
+            Set {
+                red: 0,
+                blue: 2,
+                green: 13
+            } <= Set {
+                red: 12,
+                blue: 14,
+                green: 13
+            }
+        );
+    }
+
+    #[test]
+    fn test_power() {
+        assert_eq!(
+            Set {
+                red: 0,
+                blue: 2,
+                green: 13
+            }
+            .power(),
+            0
+        );
+        assert_eq!(
+            Set {
+                red: 4,
+                blue: 2,
+                green: 6
+            }
+            .power(),
+            48
+        );
+    }
+
+    #[test]
+    fn test_part_two() {
+        let out = part_two(include_str!("../test").lines());
+        assert_eq!(out, 2286);
     }
 }
+
