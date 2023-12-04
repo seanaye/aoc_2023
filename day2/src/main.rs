@@ -58,6 +58,10 @@ impl PartialOrd for Set {
     }
 }
 
+fn iter_lines() -> impl Iterator<Item = &'static str> {
+    INPUT.lines()
+}
+
 fn blue(s: &str) -> IResult<&str, u32> {
     let (next, out) = u32(s)?;
     let (next, _) = tag(" blue")(next)?;
