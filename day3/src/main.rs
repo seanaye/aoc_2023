@@ -3,7 +3,7 @@ use nom::character::complete::digit1;
 use nom::combinator::map_res;
 use nom::multi::many1;
 use nom::IResult;
-use std::{convert::Infallible, str::FromStr};
+use std::{collections::HashSet, convert::Infallible, str::FromStr};
 
 const INPUT: &str = include_str!("../input");
 
@@ -19,16 +19,10 @@ struct Grid {
     height: usize,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 struct Coord {
     x: usize,
     y: usize,
-}
-
-impl PartialEq for Coord {
-    fn eq(&self, other: &Self) -> bool {
-        self.x == other.x && self.y == other.y
-    }
 }
 
 impl Coord {
@@ -172,6 +166,14 @@ impl NumberRange {
     fn intersects(&self, coord: &Coord) -> bool {
         self.range().contains(&coord.x) && coord.y == self.coord.y
     }
+
+    fn is_adjacent_to(&self, coord: &Coord) -> bool {
+        let neighbours = self
+            .range()
+            .flat_map(|x| Coord { x, y: self.coord.y }.adjacent().collect::<Vec<_>>())
+            .collect::<HashSet<Coord>>();
+        neighbours.contains(coord)
+    }
 }
 
 fn digit_indexes(s: &str) -> IResult<&str, Vec<NumberLine>> {
@@ -221,7 +223,7 @@ fn part_two(s: &str) -> u32 {
         .filter_map(|coord| {
             let adjacent_ranges = ranges
                 .iter()
-                .filter(|range| coord.adjacent().any(|coord| range.intersects(&coord)))
+                .filter(|range| range.is_adjacent_to(&coord))
                 .collect::<Vec<_>>();
 
             match adjacent_ranges.len() {
