@@ -51,7 +51,7 @@ fn num_list(s: &str) -> IResult<&str, Vec<usize>> {
 }
 
 fn parse_card(s: &str) -> IResult<&str, Card> {
-    let (next, _) = take_till(|c: char| c.is_digit(10))(s)?;
+    let (next, _) = take_till(|c: char| c.is_ascii_digit())(s)?;
     let (next, id) = map_res(digit1, str::parse)(next)?;
     let (next, _) = tag(": ")(next)?;
     let (_, (winners, members)) = separated_pair(num_list, tag(" | "), num_list)(next)?;
