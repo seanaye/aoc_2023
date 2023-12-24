@@ -1,0 +1,10 @@
+LR
+
+qqA = (qqB, XXX)
+qqB = (XXX, qqZ)
+qqZ = (qqB, XXX)
+wwA = (wwB, XXX)
+wwB = (wwC, wwC)
+wwC = (wwZ, wwZ)
+wwZ = (wwB, wwB)
+XXX = (XXX, XXX)
